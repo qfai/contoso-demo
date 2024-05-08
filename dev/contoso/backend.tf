@@ -3,6 +3,6 @@ terraform {
     resource_group_name  = "iacdemo"
     storage_account_name = "contosobackend"
     container_name       = "backend"
-    key                  = "{{.GroupName}}.tfstate"
+    key                  = "contoso.tfstate"
   }
 }
