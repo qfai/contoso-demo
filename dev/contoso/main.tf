@@ -1,6 +1,6 @@
 module "base" {
   source          = "../../modules/base"
-  location        = "useast"
+  location        = "eastus"
   siteId          = "contoso"
   domainFqdn      = "jumpstart.local"
   startingAddress = "192.168.1.55"
