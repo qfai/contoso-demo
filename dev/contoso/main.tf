@@ -11,7 +11,7 @@ module "base" {
   domainServerIP  = "192.168.1.254"
   servers = [
     {
-      name        = "AzHOST1",
+      name        = "AzSHOST1",
       ipv4Address = "192.168.1.12"
     },
     {
