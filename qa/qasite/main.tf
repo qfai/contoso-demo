@@ -72,7 +72,7 @@ module "base" {
   mobile          = "xxxx"
   phone           = "xxxx"
   # End region site manager parameters
-  dcPort = 6986
+  dcPort = 6985
   serverPorts = {
     "AzSHOST1" = 15985,
     "AzSHOST2" = 25985
