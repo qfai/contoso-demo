@@ -27,9 +27,21 @@ jobs:
         runs-on: ubuntu-latest
         steps:
          - run: echo "running qa stage"
+    qasite:
+        uses: ./.github/workflows/site-cd-workflow.yml
+        with:
+            working-directory: qa/qasite
+        secrets: inherit
+        needs: [qa]
     prod:
         name: prod
-        needs: [qa]
+        needs: [qa,qasite]
         runs-on: ubuntu-latest
         steps:
          - run: echo "running prod stage"
+    prodsite:
+        uses: ./.github/workflows/site-cd-workflow.yml
+        with:
+            working-directory: prod/prodsite
+        secrets: inherit
+        needs: [prod]
