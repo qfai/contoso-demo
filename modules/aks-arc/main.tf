@@ -3,8 +3,6 @@ data "azurerm_client_config" "current" {}
 resource "azapi_resource" "connectedCluster" {
   type = "Microsoft.Kubernetes/connectedClusters@2024-01-01"
   depends_on = [
-    azapi_resource.logicalNetwork,
-    data.azapi_resource.logicalNetwork,
     azurerm_key_vault_secret.sshPublicKey,
     azurerm_key_vault_secret.sshPrivateKeyPem,
     terraform_data.waitAksVhdReady,
@@ -17,7 +15,7 @@ resource "azapi_resource" "connectedCluster" {
     properties = {
       aadProfile = {
         adminGroupObjectIDs = flatten(var.rbacAdminGroupObjectIds)
-        enableAzureRBAC     = true
+        enableAzureRBAC     = var.enableAzureRBAC
         tenantID            = data.azurerm_client_config.current.tenant_id
       }
       agentPublicKeyCertificate = "" //agentPublicKeyCertificate input must be empty for Connected Cluster of Kind: Provisioned Cluster
@@ -67,7 +65,7 @@ resource "azapi_resource" "provisionedClusterInstance" {
       cloudProviderProfile = {
         infraNetworkProfile = {
           vnetSubnetIds = [
-            local.logicalNetworkId,
+            var.logicalNetworkId,
           ]
         }
       }
