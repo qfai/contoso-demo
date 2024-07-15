@@ -1,4 +1,7 @@
 resource "azurerm_resource_group" "rg" {
+  depends_on = [
+    data.external.lnetIpCheck
+  ]
   name     = local.resourceGroupName
   location = var.location
   tags = {
@@ -11,23 +14,25 @@ resource "azurerm_resource_group" "rg" {
 }
 
 module "site-manager" {
-  source          = "../site-manager"
-  siteId          = var.siteId
-  resourceGroup   = azurerm_resource_group.rg
-  country         = var.country
-  city            = var.city
-  companyName     = var.companyName
-  postalCode      = var.postalCode
-  stateOrProvince = var.stateOrProvince
-  streetAddress1  = var.streetAddress1
-  streetAddress2  = var.streetAddress2
-  streetAddress3  = var.streetAddress3
-  zipExtendedCode = var.zipExtendedCode
-  contactName     = var.contactName
-  emailList       = var.emailList
-  mobile          = var.mobile
-  phone           = var.phone
-  phoneExtension  = var.phoneExtension
+  source              = "../site-manager"
+  siteResourceName    = local.siteResourceName
+  siteDisplayName     = local.siteDisplayName
+  addressResourceName = local.addressResourceName
+  resourceGroup       = azurerm_resource_group.rg
+  country             = var.country
+  city                = var.city
+  companyName         = var.companyName
+  postalCode          = var.postalCode
+  stateOrProvince     = var.stateOrProvince
+  streetAddress1      = var.streetAddress1
+  streetAddress2      = var.streetAddress2
+  streetAddress3      = var.streetAddress3
+  zipExtendedCode     = var.zipExtendedCode
+  contactName         = var.contactName
+  emailList           = var.emailList
+  mobile              = var.mobile
+  phone               = var.phone
+  phoneExtension      = var.phoneExtension
 }
 
 //Prepare AD and arc server
@@ -108,14 +113,20 @@ module "extension" {
   enableAlerts               = var.enableAlerts
 }
 
-module "vm" {
-  count            = var.enableVM ? 1 : 0
-  source           = "../hci-vm"
-  depends_on       = [module.hci]
-  customLocationId = module.hci.customlocation.id
-  resourceGroupId  = azurerm_resource_group.rg.id
-  userStorageId    = module.hci.userStorages[0].id
-  location         = azurerm_resource_group.rg.location
+module "logical-network" {
+  source             = "../hci-logical-network"
+  depends_on         = [module.hci]
+  resourceGroupId    = azurerm_resource_group.rg.id
+  location           = azurerm_resource_group.rg.location
+  customLocationId   = module.hci.customlocation.id
+  logicalNetworkName = local.logicalNetworkName
+  vmSwitchName       = module.hci.vSwitchName
+  startingAddress    = var.lnet-startingAddress
+  endingAddress      = var.lnet-endingAddress
+  dnsServers         = var.lnet-dnsServers == [] ? var.dnsServers : var.lnet-dnsServers
+  defaultGateway     = var.lnet-defaultGateway == "" ? var.defaultGateway : var.lnet-defaultGateway
+  addressPrefix      = var.lnet-addressPrefix
+  vlanId             = var.lnet-vlanId
 }
 
 module "aks-arc" {
@@ -123,19 +134,48 @@ module "aks-arc" {
   depends_on              = [module.hci]
   customLocationId        = module.hci.customlocation.id
   resourceGroup           = azurerm_resource_group.rg
+  logicalNetworkId        = module.logical-network.logicalNetworkId
   agentPoolProfiles       = var.agentPoolProfiles
   sshKeyVaultId           = module.hci.keyvault.id
-  startingAddress         = var.aksArc-lnet-startingAddress
-  endingAddress           = var.aksArc-lnet-endingAddress
-  dnsServers              = var.aksArc-lnet-dnsServers == [] ? var.dnsServers : var.aksArc-lnet-dnsServers
-  defaultGateway          = var.aksArc-lnet-defaultGateway == "" ? var.defaultGateway : var.aksArc-lnet-defaultGateway
-  addressPrefix           = var.aksArc-lnet-addressPrefix
-  logicalNetworkName      = local.logicalNetworkName
   aksArcName              = local.aksArcName
-  vlanId                  = var.aksArc-lnet-vlanId
   controlPlaneIp          = var.aksArc-controlPlaneIp
   arbId                   = module.hci.arcbridge.id
   kubernetesVersion       = var.kubernetesVersion
   controlPlaneCount       = var.controlPlaneCount
   rbacAdminGroupObjectIds = var.rbacAdminGroupObjectIds
+}
+
+module "vm-image" {
+  source                 = "../hci-vm-gallery-image"
+  depends_on             = [module.hci]
+  customLocationId       = module.hci.customlocation.id
+  resourceGroupId        = azurerm_resource_group.rg.id
+  location               = azurerm_resource_group.rg.location
+  downloadWinServerImage = var.downloadWinServerImage
+}
+
+module "vm" {
+  count               = var.downloadWinServerImage ? 1 : 0
+  source              = "../hci-vm"
+  depends_on          = [module.vm-image]
+  location            = azurerm_resource_group.rg.location
+  customLocationId    = module.hci.customlocation.id
+  resourceGroupId     = azurerm_resource_group.rg.id
+  vmName              = local.vmName
+  imageId             = module.vm-image.winServerImageId
+  logicalNetworkId    = module.logical-network.logicalNetworkId
+  adminUsername       = local.vmAdminUsername
+  adminPassword       = var.vmAdminPassword
+  vCPUCount           = var.vCPUCount
+  memoryMB            = var.memoryMB
+  dynamicMemory       = var.dynamicMemory
+  dynamicMemoryMax    = var.dynamicMemoryMax
+  dynamicMemoryMin    = var.dynamicMemoryMin
+  dynamicMemoryBuffer = var.dynamicMemoryBuffer
+  dataDiskParams      = var.dataDiskParams
+  privateIPAddress    = var.privateIPAddress
+  domainToJoin        = var.domainToJoin
+  domainTargetOu      = var.domainTargetOu
+  domainJoinUserName  = var.domainJoinUserName
+  domainJoinPassword  = var.domainJoinPassword
 }
