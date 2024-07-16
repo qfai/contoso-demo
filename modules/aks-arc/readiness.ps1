@@ -6,7 +6,7 @@ param (
 
 $ErrorActionPreference = "Stop"
 
-az config set extension.use_dynamic_install=yes_without_prompt
+az extension add --name aksarc --yes
 
 while ($true) {
     if ($env:ACTIONS_ID_TOKEN_REQUEST_TOKEN) {
@@ -16,11 +16,21 @@ while ($true) {
         az login --federated-token $token --tenant $env:ARM_TENANT_ID -u $env:ARM_CLIENT_ID --service-principal
         az account set --subscription $env:ARM_SUBSCRIPTION_ID
     }
+    
+    $state = az aksarc get-versions --custom-location $customLocationResourceId -o json --only-show-errors
+    $state = "$state".Replace("`n", "").Replace("`r", "").Replace("`t", "").Replace(" ", "")
+    echo $state
 
-    $state = az aksarc get-versions --custom-location $customLocationResourceId
     $pos = $state.IndexOf("{")
     $state = $state.Substring($pos)
-    echo $state | ConvertFrom-Json | ConvertTo-Json -Compress -Depth 100
+    $quotePos = $state.IndexOf('"')
+
+    # Workaround for warning messages in the CLI
+    if ($quotePos -gt 1) {
+        echo "workaround for warning messages in the CLI"
+        $state = $state.Substring($quotePos)
+        $state = "{$state"
+    }
     $ready = $false
 
     foreach ($version in (echo $state  | ConvertFrom-Json).properties.values) {
