@@ -33,6 +33,8 @@ env:
   TF_VAR_servicePrincipalId: ${{ secrets.servicePrincipalId }}
   TF_VAR_servicePrincipalSecret: ${{ secrets.servicePrincipalSecret }}
   TF_VAR_rpServicePrincipalObjectId: ${{ secrets.rpServicePrincipalObjectId }}
+  TF_VAR_vmAdminPassword: ${{ secrets.vmAdminPassword }}
+  TF_VAR_domainJoinPassword: ${{ secrets.domainJoinPassword }}
   HCI_RP_SP_ID: ${{ secrets.rpServicePrincipalObjectId }}
 
 jobs:
@@ -74,13 +76,13 @@ jobs:
     # Download az-edge-module-export
     - name: Download az-edge-module-export
       run: |
-        wget "https://aka.ms/az-edge-module-export-linux-amd64?${{ secrets.PRIVATE_PREVIEW_SAS }}" -O az-edge-module-export
+        wget "https://aka.ms/az-edge-module-export-linux-amd64" -O az-edge-module-export
         chmod +x az-edge-module-export
         ./az-edge-module-export -v
     # Download az-edge-site-scale
     - name: Download az-edge-site-scale
       run: |
-        wget "https://aka.ms/az-edge-site-scale-linux-amd64?${{ secrets.PRIVATE_PREVIEW_SAS }}" -O az-edge-site-scale
+        wget "https://aka.ms/az-edge-site-scale-linux-amd64" -O az-edge-site-scale
         chmod +x az-edge-site-scale
         ./az-edge-site-scale -v
     # Run az-edge-module-export
@@ -98,6 +100,8 @@ jobs:
               ./az-edge-site-scale generate -c ./.azure/scale/$name.csv -s $groupPath
           done
         rm ./az-edge-site-scale
+    - name: Clean up
+      run: |
         rm ./.azure/export.json
     # Commit and push the changes
     - name: Commit and push the changes
