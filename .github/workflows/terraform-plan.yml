@@ -4,6 +4,10 @@ on:
   pull_request:
     branches: ["main"]
   workflow_call:
+    inputs:
+      issueNumber:
+        required: true
+        type: integer
 
 permissions:
   id-token: write
@@ -188,7 +192,15 @@ jobs:
                 fi  
               working-directory: ${{ matrix.path }}
               if: steps.plan.outcome == 'success'
-
+            - name: Set issue number to output
+              id: set-issue-number
+              run: |
+                if [ -z "${{ github.event.inputs.issueNumber }}" ]; then
+                  echo "issueNumber=${{ github.event.inputs.issueNumber }}" >> $GITHUB_ENV
+                else
+                  echo "issueNumber=${{ context.issue.number }}" >> $GITHUB_ENV
+                fi
+              if: always()
             - name: Update Pull Request
               uses: actions/github-script@v7
               with:
@@ -203,7 +215,7 @@ jobs:
                   *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
               
                   github.rest.issues.createComment({
-                    issue_number: context.issue.number,
+                    issue_number: ${{ steps.set-issue-number.outputs.issueNumber }},
                     owner: context.repo.owner,
                     repo: context.repo.repo,
                     body: output

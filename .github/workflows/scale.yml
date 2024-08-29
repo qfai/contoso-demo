@@ -70,5 +70,7 @@ jobs:
         git push
   terraform-plan:
     uses: ./.github/workflows/terraform-plan.yml
+    with:
+      issue-number: ${{ context.issue.number }}
     needs: [scale]
     
