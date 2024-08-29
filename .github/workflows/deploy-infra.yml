@@ -21,15 +21,9 @@ jobs:
             working-directory: dev/contoso
         secrets: inherit
         needs: [dev]
-    scaledsite:
-        uses: ./.github/workflows/site-cd-workflow.yml
-        with:
-            working-directory: dev/scaledsite
-        secrets: inherit
-        needs: [dev]
     qa:
         name: qa
-        needs: [dev,contoso,scaledsite]
+        needs: [dev,contoso]
         runs-on: ubuntu-latest
         steps:
          - run: echo "running qa stage"
