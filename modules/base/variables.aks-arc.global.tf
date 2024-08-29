@@ -1,7 +1,7 @@
 variable "kubernetesVersion" {
   description = "The version of Kubernetes to use for the provisioned cluster."
   type        = string
-  default     = "1.25.11"
+  default     = "1.28.5"
 }
 
 variable "controlPlaneCount" {
@@ -34,16 +34,4 @@ variable "rbacAdminGroupObjectIds" {
   type        = list(string)
   # Add your default admin groups here. Refer to the documentation under doc/AKS-Arc-Admin-Groups.md for more information.
   # default     = ["<your-admin-group-object-id>"]
-}
-
-variable "aksArc-lnet-dnsServers" {
-  type        = list(string)
-  description = "A list of DNS server IP addresses."
-  default     = []
-}
-
-variable "aksArc-lnet-defaultGateway" {
-  type        = string
-  description = "The default gateway for the network."
-  default     = ""
 }
