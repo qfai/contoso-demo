@@ -70,5 +70,7 @@ jobs:
     depends-on: scale
     environment: terraform
     runs-on: ubuntu-latest
-    uses: ./.github/workflows/terraform-plan.yml
+    steps:
+      - name: terraform plan
+        uses: ./.github/workflows/terraform-plan.yml
     
