@@ -65,7 +65,7 @@ module "base" {
   city            = "redmond"
   companyName     = "contoso"
   postalCode      = "4331"
-  stateOrProvince = "unkown "
+  stateOrProvince = "unkown"
   streetAddress1  = "1 microsoft way"
   contactName     = "qfai"
   emailList       = ["xxx@contoso.com"]
@@ -77,5 +77,5 @@ module "base" {
     "AzSHOST1" = 15985,
     "AzSHOST2" = 25985
   }
-  virtualHostIp = "10.0.0.10"
+  virtualHostIp = "10.0.0.7"
 }
