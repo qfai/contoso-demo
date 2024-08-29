@@ -67,7 +67,7 @@ jobs:
         git commit -m "Scale more sites according to .azure/scale.csv"
         git push
   terraform-plan:
-    depends-on: scale
+    needs: scale
     environment: terraform
     runs-on: ubuntu-latest
     steps:
