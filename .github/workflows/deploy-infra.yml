@@ -33,9 +33,15 @@ jobs:
             working-directory: qa/qasite
         secrets: inherit
         needs: [qa]
+    scaledsite:
+        uses: ./.github/workflows/site-cd-workflow.yml
+        with:
+            working-directory: qa/scaledsite
+        secrets: inherit
+        needs: [qa]
     prod:
         name: prod
-        needs: [qa,qasite]
+        needs: [qa,qasite,scaledsite]
         runs-on: ubuntu-latest
         steps:
          - run: echo "running prod stage"
