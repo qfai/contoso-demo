@@ -68,9 +68,4 @@ jobs:
         git add .
         git commit -m "Scale more sites according to .azure/scale.csv"
         git push
-  terraform-plan:
-    uses: ./.github/workflows/terraform-plan.yml
-    with:
-      issue-number: ${{ context.issue.number }}
-    needs: [scale]
     
