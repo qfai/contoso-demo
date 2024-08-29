@@ -4,10 +4,6 @@ on:
   pull_request:
     branches: ["main"]
   workflow_call:
-    inputs:
-      issueNumber:
-        required: true
-        type: integer
 
 permissions:
   id-token: write
